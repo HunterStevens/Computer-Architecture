@@ -7,6 +7,8 @@ LDI = 0b10000010
 PRN = 0b01000111
 MULT = 0b10100010
 ADD = 0b10100000
+PUSH = 0b01000101
+POP = 0b01000110
 
 class CPU:
     """Main CPU class."""
@@ -17,8 +19,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-        
-        pass
+        self.sp = 0xF4
 
     def load(self):
         """Load a program into memory."""
@@ -87,7 +88,23 @@ class CPU:
 
     def ram_write(self, address, value):
         self.ram[address] = value
-        return self.ram[address]
+        return
+
+    def stack(self, op, value = None):
+        if op == "PUSH":
+            self.sp -= 1
+            self.ram_write(self.sp, value)
+            return
+        elif op == "POP":
+            if self.sp < 0xF4:
+                pop_value = self.ram_read(self.sp)
+                # print(pop_value, " <-- Pop_value")
+                self.sp += 1
+                return pop_value
+            else:
+                print("ERROR: Stack is empty")
+                return
+
 
     def run(self):
         """Run the CPU."""
@@ -101,19 +118,23 @@ class CPU:
             elif ir == LDI:
                 self.ram[byt_a] = byt_b
                 self.pc += 3
-                # print(self.ram[byt_a])
             elif ir == PRN:
                 print(self.ram[byt_a], "\n")
                 self.pc += 2
             elif ir == MULT:
-                # print(byt_a)
-                # print(byt_b)
-                # print("\n")
                 self.alu("MULT", byt_a, byt_b)
                 self.pc += 3
             elif ir == ADD:
                 self.alu("ADD", byt_a, byt_b)
                 self.pc += 3
+            elif ir == PUSH:
+                self.stack("PUSH", self.ram[byt_a])
+                # print(self.reg[byt_a], " <-- self.reg[byt_a]")
+                self.pc += 2
+            elif ir == POP:
+                value = self.stack("POP")
+                self.ram[byt_a] = value
+                self.pc += 2
             else:
                 print(f"Unknown Instruction {ir}")
                 if self.pc < len(self.ram)-1:
