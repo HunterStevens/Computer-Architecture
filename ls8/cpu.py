@@ -9,7 +9,9 @@ MULT = 0b10100010
 ADD = 0b10100000
 PUSH = 0b01000101
 POP = 0b01000110
-
+CALL = 0b01010000
+RET = 0b00010001
+JMP = 0b01010100
 class CPU:
     """Main CPU class."""
 
@@ -135,6 +137,16 @@ class CPU:
                 value = self.stack("POP")
                 self.ram[byt_a] = value
                 self.pc += 2
+            elif ir == CALL:
+                self.stack("PUSH", self.pc+2)
+                sub_address = self.ram[byt_a]
+                self.pc = sub_address
+            elif ir == RET:
+                address = self.stack("POP")
+                self.pc = address
+            elif ir == JMP:
+                address = self.ram[byt_a]
+                self.pc = address
             else:
                 print(f"Unknown Instruction {ir}")
                 if self.pc < len(self.ram)-1:
