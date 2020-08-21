@@ -12,6 +12,9 @@ POP = 0b01000110
 CALL = 0b01010000
 RET = 0b00010001
 JMP = 0b01010100
+CMP = 0b10100111
+JEQ = 0b01010101
+JNE = 0b01010110
 class CPU:
     """Main CPU class."""
 
@@ -22,6 +25,7 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.sp = 0xF4
+        self.fl = 0b00000000
 
     def load(self):
         """Load a program into memory."""
@@ -147,6 +151,26 @@ class CPU:
             elif ir == JMP:
                 address = self.ram[byt_a]
                 self.pc = address
+            elif ir == CMP:
+                if self.ram[byt_a] == self.ram[byt_b]:
+                    self.fl = 0b00000001
+                elif self.ram[byt_a] < self.ram[byt_b]:
+                    self.fl = 0b00000100
+                elif self.ram[byt_a] > self.ram[byt_b]:
+                    self.fl = 0b00000010
+                self.pc += 3
+            elif ir == JNE:
+                if self.fl != 0b00000001:
+                    jmp_address = self.ram[byt_a]
+                    self.pc = jmp_address
+                else:
+                    self.pc += 2
+            elif ir == JEQ:
+                if self.fl == 0b00000001:
+                    jmp_address = self.ram[byt_a]
+                    self.pc = jmp_address
+                else:
+                    self.pc += 2
             else:
                 print(f"Unknown Instruction {ir}")
                 if self.pc < len(self.ram)-1:
