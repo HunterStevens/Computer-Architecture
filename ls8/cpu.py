@@ -66,6 +66,13 @@ class CPU:
             self.ram[reg_a] += self.ram[reg_b]
         elif op == "MULT":
             self.ram[reg_a] *= self.ram[reg_b]
+        elif op == "CMP":
+            if self.ram[reg_a] == self.ram[reg_b]:
+                self.fl = 0b00000001
+            elif self.ram[reg_a] < self.ram[reg_b]:
+                self.fl = 0b00000100
+            elif self.ram[reg_a] > self.ram[reg_b]:
+                self.fl = 0b00000010
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -152,12 +159,7 @@ class CPU:
                 address = self.ram[byt_a]
                 self.pc = address
             elif ir == CMP:
-                if self.ram[byt_a] == self.ram[byt_b]:
-                    self.fl = 0b00000001
-                elif self.ram[byt_a] < self.ram[byt_b]:
-                    self.fl = 0b00000100
-                elif self.ram[byt_a] > self.ram[byt_b]:
-                    self.fl = 0b00000010
+                self.alu("CMP", byt_a, byt_b)
                 self.pc += 3
             elif ir == JNE:
                 if self.fl != 0b00000001:
